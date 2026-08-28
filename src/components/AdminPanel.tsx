@@ -14,7 +14,7 @@ import {
   getEffectiveSessionTiming,
   updateCheckInTime,
 } from '../db/storage';
-import type { Booking, Station, PaymentMethod, EffectiveSessionTiming } from '../db/storage';
+import type { Booking, Station, PaymentMethod } from '../db/storage';
 import {
   Shield,
   Search,
@@ -503,7 +503,7 @@ export default function AdminPanel() {
                           <span>Check-In Recorded:</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <strong>{new Date(b.actualStartTime!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong>
-                            <button onClick={() => { setShowCheckInEditModal(b); setEditCheckInTimeVal(new Date(b.actualStartTime!).toLocaleTimeString([], { hour24: false, hour: '2-digit', minute: '2-digit' })); }}
+                            <button onClick={() => { setShowCheckInEditModal(b); setEditCheckInTimeVal(new Date(b.actualStartTime!).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })); }}
                               title="Correct check-in time" style={{ background: 'none', border: 'none', color: 'var(--neon-blue)', cursor: 'pointer', padding: 0 }}>
                               <Edit3 size={12} />
                             </button>
