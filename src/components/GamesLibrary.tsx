@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Gamepad, Laptop, Search, Star, Users, Zap, Shield, Play } from 'lucide-react';
+import { Gamepad, Laptop, Search, Star, Zap, Play } from 'lucide-react';
 
 export interface GameItem {
   id: string;
