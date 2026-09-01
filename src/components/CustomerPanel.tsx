@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   getStations,
   getBookings,
@@ -194,8 +194,14 @@ function LiveSummaryPill({ station, controllers, date, startTime, durationHours,
   );
 }
 
+interface CustomerPanelProps {
+  initialBookingType?: 'PC' | 'PS5' | null;
+  onClearInitialBooking?: () => void;
+  onNavigateToGames?: () => void;
+}
+
 // ── MAIN COMPONENT ─────────────────────────────────────────────────────────────
-export default function CustomerPanel() {
+export default function CustomerPanel({ initialBookingType, onClearInitialBooking, onNavigateToGames }: CustomerPanelProps = {}) {
   const [subView, setSubView] = useState<SubView>('home');
 
   // Booking Wizard
@@ -212,6 +218,24 @@ export default function CustomerPanel() {
   const [bookingNotes, setBookingNotes] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successBooking, setSuccessBooking] = useState<Booking | null>(null);
+
+  const handleStartBooking = useCallback((type: 'PC' | 'PS5') => {
+    setBookingType(type);
+    setBookingStep(1);
+    setNumControllers(1);
+    setSubView('book');
+    setSelectedStationId('');
+    setErrorMessage('');
+    setSuccessBooking(null);
+  }, []);
+
+  // Handle auto-booking triggering from Games Catalog
+  useEffect(() => {
+    if (initialBookingType) {
+      handleStartBooking(initialBookingType);
+      if (onClearInitialBooking) onClearInitialBooking();
+    }
+  }, [initialBookingType, handleStartBooking, onClearInitialBooking]);
 
   // Manage Booking
   const [searchId, setSearchId] = useState('');
@@ -255,15 +279,7 @@ export default function CustomerPanel() {
     ? ['Type', 'Controllers', 'Time', 'Station', 'Details', 'Confirm']
     : ['Type', 'Time', 'Station', 'Details', 'Confirm'];
 
-  const handleStartBooking = (type: 'PC' | 'PS5') => {
-    setBookingType(type);
-    setBookingStep(1);
-    setNumControllers(1);
-    setSubView('book');
-    setSelectedStationId('');
-    setErrorMessage('');
-    setSuccessBooking(null);
-  };
+
 
   const handleNextStep = () => {
     setErrorMessage('');
@@ -434,23 +450,126 @@ export default function CustomerPanel() {
       ════════════════════════════════════════ */}
       {subView === 'home' && (
         <>
-          {/* Hero */}
-          <section className="glass-card neon-blue-hover" style={{ position: 'relative', overflow: 'hidden', padding: '56px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at 50% 30%, rgba(0,240,255,0.15) 0%, transparent 70%)', zIndex: -1 }} />
-            <span className="font-gaming" style={{ color: 'var(--neon-green)', fontSize: '0.85rem', fontWeight: 'bold' }}>Premium Esports Hub</span>
-            <h2 className="font-gaming" style={{ fontSize: '2.2rem', fontWeight: 900, lineHeight: 1.1, textShadow: '0 0 15px rgba(0,240,255,0.4)' }}>
-              Level Up Your Game
-            </h2>
-            <p style={{ maxWidth: '580px', margin: '0 auto' }}>
-              High-end PC gaming and console action. Book instantly online — play now, pay later with Cash or UPI.
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', marginTop: '12px', width: '100%', maxWidth: '380px' }}>
-              <button onClick={() => handleStartBooking('PC')} className="btn btn-neon-blue">
-                <Laptop size={18} /> Book PC Station
-              </button>
-              <button onClick={() => handleStartBooking('PS5')} className="btn btn-neon-purple">
-                <Gamepad size={18} /> Book PS5 Station
-              </button>
+          {/* Hero Banner with Gaming Background */}
+          <section
+            className="glass-card"
+            style={{
+              position: 'relative',
+              overflow: 'hidden',
+              padding: '48px 32px',
+              borderRadius: '20px',
+              border: '1px solid rgba(56, 189, 248, 0.2)',
+              backgroundImage: 'linear-gradient(180deg, rgba(10, 13, 20, 0.75) 0%, rgba(10, 13, 20, 0.95) 100%), url(/hero_gaming_bg.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '750px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span className="badge badge-available">
+                  <Zap size={12} /> RTX 4080 RIGS & PS5 CONSOLES
+                </span>
+                <span className="badge badge-inuse">
+                  GTA V &middot; EA FC 24 &middot; COD MW III READY
+                </span>
+              </div>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1.15, margin: 0, color: '#fff' }}>
+                NEXT-GEN <span style={{ color: 'var(--neon-blue)' }}>GAMING PARLOUR</span> & STORE
+              </h2>
+              <p style={{ fontSize: '1rem', color: '#cbd5e1', margin: 0, lineHeight: 1.6 }}>
+                Experience high-frame-rate PC gaming rigs and PlayStation 5 4K gaming lounge. Book your gaming slot online in seconds. Cash & UPI accepted at venue.
+              </p>
+              
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '8px' }}>
+                <button onClick={() => handleStartBooking('PC')} className="btn btn-neon-blue" style={{ width: 'auto', padding: '12px 24px' }}>
+                  <Laptop size={18} /> Book PC Rig (₹120/hr)
+                </button>
+                <button onClick={() => handleStartBooking('PS5')} className="btn btn-neon-purple" style={{ width: 'auto', padding: '12px 24px' }}>
+                  <Gamepad size={18} /> Book PS5 Console (₹90/hr)
+                </button>
+                {onNavigateToGames && (
+                  <button onClick={onNavigateToGames} className="btn btn-secondary" style={{ width: 'auto', padding: '12px 20px' }}>
+                    Browse All 15+ Games
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Featured Blockbuster Games Row */}
+            <div style={{ borderTop: '1px solid var(--border-muted)', paddingTop: '24px', marginTop: '12px' }}>
+              <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '14px', fontFamily: 'var(--font-gaming)' }}>
+                🔥 Featured Hits Installed & Ready to Play
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                {/* GTA V Card */}
+                <div
+                  onClick={() => handleStartBooking('PC')}
+                  style={{
+                    background: 'rgba(15, 20, 30, 0.8)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border-muted)',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                  className="live-session-card"
+                >
+                  <img src="/gtav_poster.jpg" alt="GTA V" style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
+                  <div style={{ padding: '10px 12px' }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fff' }}>Grand Theft Auto V</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--neon-blue)', marginTop: '2px' }}>PC & PS5 &middot; Open World</div>
+                  </div>
+                </div>
+
+                {/* EA FC 24 Card */}
+                <div
+                  onClick={() => handleStartBooking('PS5')}
+                  style={{
+                    background: 'rgba(15, 20, 30, 0.8)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border-muted)',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                  className="live-session-card"
+                >
+                  <img src="/fifa_poster.jpg" alt="EA FC 24" style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
+                  <div style={{ padding: '10px 12px' }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fff' }}>EA Sports FC 24 (FIFA)</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--neon-green)', marginTop: '2px' }}>PS5 4-Player Local PvP</div>
+                  </div>
+                </div>
+
+                {/* COD MW Card */}
+                <div
+                  onClick={() => handleStartBooking('PC')}
+                  style={{
+                    background: 'rgba(15, 20, 30, 0.8)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border-muted)',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                  className="live-session-card"
+                >
+                  <img src="/cod_poster.jpg" alt="COD MW III" style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
+                  <div style={{ padding: '10px 12px' }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fff' }}>COD: Modern Warfare III</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--neon-purple)', marginTop: '2px' }}>PC 240Hz Esports FPS</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
